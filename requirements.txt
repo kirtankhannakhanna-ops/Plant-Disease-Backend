@@ -5,4 +5,4 @@ Pillow
 requests
 gTTS
 streamlit-js-eval
-tensorflow-cpu
+tflite-runtime
