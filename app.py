@@ -8,12 +8,9 @@ import datetime
 from gtts import gTTS
 from PIL import Image, ImageOps
 from streamlit_js_eval import streamlit_js_eval
-
-# TFLite Import (Jo dono PC aur Server par chalega)
-try:
-    import tflite_runtime.interpreter as tflite
-except ImportError:
-    import tensorflow.lite as tflite
+import tensorflow as tf
+tflite = tf.lite
+    
 
 # 1. Absolute Mobile Viewport Dynamic Configuration
 st.set_page_config(
