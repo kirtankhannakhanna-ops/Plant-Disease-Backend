@@ -1,6 +1,8 @@
-tensorflow
-keras
-numpy
-pillow
 streamlit
-flask
+numpy
+pandas
+Pillow
+requests
+gTTS
+streamlit-js-eval
+tensorflow-cpu
