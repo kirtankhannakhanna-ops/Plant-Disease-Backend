@@ -6,9 +6,14 @@ import numpy as np
 import pandas as pd
 import datetime
 from gtts import gTTS
-import tensorflow as tf
 from PIL import Image, ImageOps
 from streamlit_js_eval import streamlit_js_eval
+
+# TFLite Import (Jo dono PC aur Server par chalega)
+try:
+    import tflite_runtime.interpreter as tflite
+except ImportError:
+    import tensorflow.lite as tflite
 
 # 1. Absolute Mobile Viewport Dynamic Configuration
 st.set_page_config(
@@ -132,10 +137,13 @@ def log_scan(plant, disease, severity):
         "Timestamp": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     })
 
+# Naya TFLite Model Loading Function
 @st.cache_resource
 def load_plant_model():
-    model_path = "./models/best_plant_model.h5"
-    return tf.keras.models.load_model(model_path)
+    model_path = "./models/model.tflite"
+    interpreter = tflite.Interpreter(model_path=model_path)
+    interpreter.allocate_tensors()
+    return interpreter
 
 try:
     model = load_plant_model()
@@ -293,10 +301,18 @@ with tab1:
             with st.spinner("Processing Pattern Engine..."):
                 image = Image.open(final_image_source).convert("RGB")
                 image = image.resize((128, 128))
-                img_array = np.array(image) / 255.0  
-                img_array = np.expand_dims(img_array, axis=0) 
                 
-                predictions = model.predict(img_array)
+                # Naya TFLite Prediction Logic
+                img_array = np.array(image) / 255.0  
+                img_array = np.expand_dims(img_array, axis=0).astype(np.float32) 
+                
+                input_details = model.get_input_details()
+                output_details = model.get_output_details()
+                
+                model.set_tensor(input_details[0]['index'], img_array)
+                model.invoke()
+                
+                predictions = model.get_tensor(output_details[0]['index'])
                 predicted_class_idx = np.argmax(predictions[0])
                 detected_raw_name = CLASS_NAMES[predicted_class_idx]
                 
